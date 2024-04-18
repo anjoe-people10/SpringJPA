@@ -1,0 +1,5 @@
+INSERT INTO student(uid, name, age) VALUES(1, 'Anjoe', 21)
+INSERT INTO student(uid, name, age) VALUES(2, 'Binul', 20)
+INSERT INTO student(uid, name, age) VALUES(3, 'Casper', 19)
+INSERT INTO student(uid, name, age) VALUES(4, 'Didin', 22)
+INSERT INTO student(uid, name, age) VALUES(5, 'Eggo', 20)
