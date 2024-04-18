@@ -2,6 +2,7 @@ package com.anjoe.SpringJPA.controller;
 
 import com.anjoe.SpringJPA.model.Student;
 import com.anjoe.SpringJPA.service.StudentService;
+import com.anjoe.SpringJPA.util.StudentResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -53,11 +54,19 @@ public class StudentController {
 
     //Deleting existing student with /student/<uid> using DELETE request
     @DeleteMapping("/{uid}")
-    public ResponseEntity<String> deleteStudent(@PathVariable int uid) {
+    public StudentResponse<Student> deleteStudent(@PathVariable int uid) {
         if (studentService.deleteStudent(uid)) {
-            return new ResponseEntity<>("Successful", HttpStatus.NO_CONTENT);
+//            return new ResponseEntity<>("Successful", HttpStatus.NO_CONTENT);
+            return StudentResponse.<Student>builder()
+                    .status(HttpStatus.NO_CONTENT)
+                    .message("Deleted student with id " + uid)
+                    .build();
         } else {
-            return new ResponseEntity<>("Student does not exist", HttpStatus.NOT_FOUND);
+//            return new ResponseEntity<>("Student does not exist", HttpStatus.NOT_FOUND);
+            return StudentResponse.<Student>builder()
+                    .status(HttpStatus.NOT_FOUND)
+                    .message("No student with id " + uid)
+                    .build();
         }
     }
 }
