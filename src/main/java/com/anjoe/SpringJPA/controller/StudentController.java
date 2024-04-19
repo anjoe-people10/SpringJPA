@@ -2,7 +2,7 @@ package com.anjoe.SpringJPA.controller;
 
 import com.anjoe.SpringJPA.model.Student;
 import com.anjoe.SpringJPA.service.StudentService;
-import com.anjoe.SpringJPA.util.StudentResponse;
+import com.anjoe.SpringJPA.util.GetErrorResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,62 +11,73 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 @RestController
 @RequestMapping("/students")
 public class StudentController {
 
-    @Autowired
-    private StudentService studentService;
+    private final StudentService studentService;
+
+    private GetErrorResponse errorResponse;
+
+    public StudentController(@Autowired StudentService studentService) {
+        this.studentService = studentService;
+    }
 
     //Return a list of all students
     @GetMapping
     public ResponseEntity<List<Student>> getAllStudents() {
-        return new ResponseEntity<>(studentService.getAllStudents(), HttpStatus.OK);
+        return ResponseEntity.ok(studentService.getAllStudents());
     }
 
     //Returns student with /student/<uid>
     @GetMapping("/{uid}")
-    public ResponseEntity<Student> getStudentById(@PathVariable int uid) {
+    public ResponseEntity<?> getStudentById(@PathVariable int uid) {
         Optional<Student> optionalStudent = studentService.getStudentById(uid);
-        return optionalStudent.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        if (optionalStudent.isPresent()) {
+            return ResponseEntity.ok(optionalStudent.get());
+        } else {
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(GetErrorResponse.studentNotFound());
+        }
     }
 
 
     //Creates new student with json in request body with POST request
     @PostMapping()
-    public ResponseEntity<String> createStudent(@RequestBody Student student) {
+    public ResponseEntity<?> createStudent(@RequestBody Student student) {
         if (studentService.createStudent(student)) {
-            return new ResponseEntity<>("Successful", HttpStatus.CREATED);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(student);
         } else {
-            return new ResponseEntity<>("Student already exists", HttpStatus.CONFLICT);
+            return ResponseEntity.status(CONFLICT)
+                    .body(GetErrorResponse.studentAlreadyExists()
+                    );
         }
     }
 
     //Updates existing student with /student/<uid> and json in request body using PUT request
     @PutMapping("/{uid}")
-    public ResponseEntity<String> updateStudent(@PathVariable int uid, @RequestBody Student newStudent) {
+    public ResponseEntity<?> updateStudent(@PathVariable int uid, @RequestBody Student newStudent) {
         if (studentService.updateStudent(uid, newStudent)) {
-            return new ResponseEntity<>("Successful", HttpStatus.OK);
+            return ResponseEntity.ok().body(newStudent);
         } else {
-            return new ResponseEntity<>("Student does not exist", HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(GetErrorResponse.studentNotFound()
+                    );
         }
     }
 
     //Deleting existing student with /student/<uid> using DELETE request
     @DeleteMapping("/{uid}")
-    public StudentResponse<Student> deleteStudent(@PathVariable int uid) {
+    public ResponseEntity<?> deleteStudent(@PathVariable int uid) {
         if (studentService.deleteStudent(uid)) {
-//            return new ResponseEntity<>("Successful", HttpStatus.NO_CONTENT);
-            return StudentResponse.<Student>builder()
-                    .status(HttpStatus.NO_CONTENT)
-                    .message("Deleted student with id " + uid)
-                    .build();
+            return ResponseEntity.noContent().build();
         } else {
-//            return new ResponseEntity<>("Student does not exist", HttpStatus.NOT_FOUND);
-            return StudentResponse.<Student>builder()
-                    .status(HttpStatus.NOT_FOUND)
-                    .message("No student with id " + uid)
-                    .build();
+            return ResponseEntity.status(NOT_FOUND)
+                    .body(GetErrorResponse.studentNotFound());
         }
     }
 }
