@@ -1,47 +1,27 @@
 package com.anjoe.SpringJPA.model;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
+import java.time.LocalDate;
+
+@Data
 @Entity
-@Table(name = "student")
 public class Student {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int uid;
+
+    @NotBlank(message = "Name cannot be null")
     private String name;
-    private int age;
 
-    public int getUid() {
-        return uid;
-    }
-
-    public void setUid(int uid) {
-        this.uid = uid;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "Student{" +
-                "uid=" + uid +
-                ", name='" + name + '\'' +
-                ", age=" + age +
-                '}';
-    }
+    @NotNull(message = "Date of birth cannot be null")
+    @Past(message = "Person is not born yet")
+    private LocalDate dateOfBirth;
 }

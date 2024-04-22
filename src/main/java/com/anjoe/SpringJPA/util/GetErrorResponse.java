@@ -1,22 +1,23 @@
 package com.anjoe.SpringJPA.util;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import static org.springframework.http.HttpStatus.CONFLICT;
 
 public class GetErrorResponse {
 
-    public static ErrorResponse studentNotFound() {
-        return ErrorResponse.builder()
-                        .status(CONFLICT)
+    public static ResponseEntity<?> studentNotFound() {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.builder()
+                        .status(HttpStatus.NOT_FOUND)
                         .message("No such student")
-                        .build();
+                        .build());
     }
 
-    public static ErrorResponse studentAlreadyExists() {
-        return ErrorResponse.builder()
-                        .status(CONFLICT)
+    public static ResponseEntity<ErrorResponse> studentAlreadyExists() {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.builder()
+                        .status(HttpStatus.NOT_FOUND)
                         .message("Student already exists")
-                        .build();
+                        .build());
     }
 }

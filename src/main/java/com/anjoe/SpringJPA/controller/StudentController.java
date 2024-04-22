@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,41 +33,36 @@ public class StudentController {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
 
-    //Returns student with /student/<uid>
+    //Returns student with /student/<uid> with GET request
     @GetMapping("/{uid}")
     public ResponseEntity<?> getStudentById(@PathVariable int uid) {
         Optional<Student> optionalStudent = studentService.getStudentById(uid);
         if (optionalStudent.isPresent()) {
             return ResponseEntity.ok(optionalStudent.get());
         } else {
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(GetErrorResponse.studentNotFound());
+            return GetErrorResponse.studentNotFound();
         }
     }
 
 
     //Creates new student with json in request body with POST request
     @PostMapping()
-    public ResponseEntity<?> createStudent(@RequestBody Student student) {
+    public ResponseEntity<?> createStudent(@Valid @RequestBody Student student) {
         if (studentService.createStudent(student)) {
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(student);
         } else {
-            return ResponseEntity.status(CONFLICT)
-                    .body(GetErrorResponse.studentAlreadyExists()
-                    );
+            return GetErrorResponse.studentAlreadyExists();
         }
     }
 
     //Updates existing student with /student/<uid> and json in request body using PUT request
     @PutMapping("/{uid}")
-    public ResponseEntity<?> updateStudent(@PathVariable int uid, @RequestBody Student newStudent) {
+    public ResponseEntity<?> updateStudent(@PathVariable int uid, @Valid @RequestBody Student newStudent) {
         if (studentService.updateStudent(uid, newStudent)) {
             return ResponseEntity.ok().body(newStudent);
         } else {
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(GetErrorResponse.studentNotFound()
-                    );
+            return GetErrorResponse.studentNotFound();
         }
     }
 
@@ -76,8 +72,7 @@ public class StudentController {
         if (studentService.deleteStudent(uid)) {
             return ResponseEntity.noContent().build();
         } else {
-            return ResponseEntity.status(NOT_FOUND)
-                    .body(GetErrorResponse.studentNotFound());
+            return GetErrorResponse.studentNotFound();
         }
     }
 }
