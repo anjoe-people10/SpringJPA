@@ -66,8 +66,7 @@ class StudentControllerTest {
 
         ResponseEntity<?> responseEntity = studentController.getStudentById(uid);
 
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertEquals(GetErrorResponse.studentNotFound(), responseEntity.getBody());
+        assertEquals(GetErrorResponse.studentNotFound(), responseEntity);
     }
 
     @Test
@@ -88,8 +87,7 @@ class StudentControllerTest {
 
         ResponseEntity<?> responseEntity = studentController.createStudent(student);
 
-        assertEquals(HttpStatus.CONFLICT, responseEntity.getStatusCode());
-        assertEquals(GetErrorResponse.studentAlreadyExists(), responseEntity.getBody());
+        assertEquals(GetErrorResponse.studentAlreadyExists(), responseEntity);
     }
 
     @Test
@@ -112,8 +110,7 @@ class StudentControllerTest {
 
         ResponseEntity<?> responseEntity = studentController.updateStudent(uid, student);
 
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertEquals(GetErrorResponse.studentNotFound(), responseEntity.getBody());
+        assertEquals(GetErrorResponse.studentNotFound(), responseEntity);
     }
 
     @Test
@@ -136,7 +133,6 @@ class StudentControllerTest {
 
         ResponseEntity<?> responseEntity = studentController.deleteStudent(uid);
 
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertEquals(GetErrorResponse.studentNotFound(), responseEntity.getBody());
+        assertEquals(GetErrorResponse.studentNotFound(), responseEntity);
     }
 }
