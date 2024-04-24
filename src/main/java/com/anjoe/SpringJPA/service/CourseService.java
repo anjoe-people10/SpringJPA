@@ -1,8 +1,8 @@
 package com.anjoe.SpringJPA.service;
 
-import com.anjoe.SpringJPA.exception.CourseAlreadyExistError;
-import com.anjoe.SpringJPA.exception.CourseNotFoundError;
-import com.anjoe.SpringJPA.exception.PrimaryKeyUpdateError;
+import com.anjoe.SpringJPA.exception.RecordAlreadyExistException;
+import com.anjoe.SpringJPA.exception.RecordNotFoundException;
+import com.anjoe.SpringJPA.exception.PrimaryKeyUpdateException;
 import com.anjoe.SpringJPA.model.Course;
 import com.anjoe.SpringJPA.repository.CourseRepository;
 import lombok.AllArgsConstructor;
@@ -22,12 +22,12 @@ public class CourseService {
 
     public Course getCourseById(int courseId) {
         return courseRepository.findById(courseId)
-                .orElseThrow(CourseNotFoundError::new);
+                .orElseThrow(() -> new RecordNotFoundException("Course"));
     }
 
     public Course createCourse(Course course) {
         if (courseRepository.existsById(course.getCourseId())) {
-            throw new CourseAlreadyExistError();
+            throw new RecordAlreadyExistException("Course");
         } else {
             return courseRepository.save(course);
         }
@@ -35,14 +35,14 @@ public class CourseService {
 
     public Course updateCourse(int courseId, Course course) {
         if (courseRepository.existsById(courseId)) {
-            if(courseId == course.getCourseId()) {
+            if (courseId == course.getCourseId()) {
                 courseRepository.save(course);
                 return course;
             } else {
-                throw new PrimaryKeyUpdateError();
+                throw new PrimaryKeyUpdateException();
             }
         } else {
-            throw new CourseNotFoundError();
+            throw new RecordNotFoundException("Course");
         }
     }
 
@@ -50,7 +50,7 @@ public class CourseService {
         if (courseRepository.existsById(courseId)) {
             courseRepository.deleteById(courseId);
         } else {
-            throw new CourseNotFoundError();
+            throw new RecordNotFoundException("Course");
         }
     }
 }

@@ -1,8 +1,12 @@
 package com.anjoe.SpringJPA.controller;
 
+import com.anjoe.SpringJPA.config.JacksonConfig;
+import com.anjoe.SpringJPA.exception.RecordAlreadyExistException;
+import com.anjoe.SpringJPA.exception.RecordNotFoundException;
 import com.anjoe.SpringJPA.model.Student;
+import com.anjoe.SpringJPA.model.Teacher;
 import com.anjoe.SpringJPA.service.StudentService;
-import com.anjoe.SpringJPA.util.GetErrorResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,26 +14,40 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
 class StudentControllerTest {
 
     private StudentController studentController;
+
+    private MockMvc mockMvc;
+    private ObjectMapper objectMapper;
+    private Student student;
+
     @Mock
     private StudentService studentService;
 
     @BeforeEach
     void setUp() {
+        student = new Student(1, "TesterName", LocalDate.now().minusDays(1), new Teacher());
         studentController = new StudentController(studentService);
+        mockMvc = MockMvcBuilders.standaloneSetup(studentController).build();
+        objectMapper = new JacksonConfig().objectMapper();
     }
 
     @AfterEach
@@ -38,7 +56,7 @@ class StudentControllerTest {
 
     @Test
     void getAllStudents() {
-        List<Student> students = Arrays.asList(new Student(), new Student());
+        List<Student> students = Arrays.asList(student, student);
         when(studentService.getAllStudents()).thenReturn(students);
 
         ResponseEntity<List<Student>> responseEntity = studentController.getAllStudents();
@@ -48,91 +66,86 @@ class StudentControllerTest {
     }
 
     @Test
-    void getStudentById_Found() {
+    void getStudentById_Success() {
         int uid = 1;
-        Student student = new Student();
-        when(studentService.getStudentById(uid)).thenReturn(Optional.of(student));
+        when(studentService.getStudentById(uid)).thenReturn(student);
 
-        ResponseEntity<?> responseEntity = studentController.getStudentById(uid);
+        ResponseEntity<Student> responseEntity = studentController.getStudentById(uid);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(student, responseEntity.getBody());
     }
 
     @Test
-    void getStudentById_NotFound() {
-        int uid = 1;
-        when(studentService.getStudentById(uid)).thenReturn(Optional.empty());
-
-        ResponseEntity<?> responseEntity = studentController.getStudentById(uid);
-
-        assertEquals(GetErrorResponse.studentNotFound(), responseEntity);
-    }
-
-    @Test
     void createStudent_Success() {
-        Student student = new Student();
-        when(studentService.createStudent(student)).thenReturn(true);
+        when(studentService.createStudent(student)).thenReturn(student);
 
-        ResponseEntity<?> responseEntity = studentController.createStudent(student);
+        ResponseEntity<Student> responseEntity = studentController.createStudent(student);
 
         assertEquals(HttpStatus.CREATED, responseEntity.getStatusCode());
         assertEquals(student, responseEntity.getBody());
     }
 
     @Test
-    void createStudent_AlreadyExists() {
-        Student student = new Student();
-        when(studentService.createStudent(student)).thenReturn(false);
-
-        ResponseEntity<?> responseEntity = studentController.createStudent(student);
-
-        assertEquals(GetErrorResponse.studentAlreadyExists(), responseEntity);
-    }
-
-    @Test
     void updateStudent_Success() {
         int uid = 1;
-        Student student = new Student();
-        when(studentService.updateStudent(uid, student)).thenReturn(true);
+        when(studentService.updateStudent(uid, student)).thenReturn(student);
 
-        ResponseEntity<?> responseEntity = studentController.updateStudent(uid, student);
+        ResponseEntity<Student> responseEntity = studentController.updateStudent(uid, student);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(student, responseEntity.getBody());
     }
 
     @Test
-    void updateStudent_NotFound() {
+    void deleteStudent_Success() {
         int uid = 1;
-        Student student = new Student();
-        when(studentService.updateStudent(uid, student)).thenReturn(false);
+        doNothing().when(studentService).deleteStudent(uid);
 
-        ResponseEntity<?> responseEntity = studentController.updateStudent(uid, student);
-
-        assertEquals(GetErrorResponse.studentNotFound(), responseEntity);
-    }
-
-    @Test
-    void deleteStudent_Found() {
-        int uid = 1;
-        Student student = new Student();
-        when(studentService.deleteStudent(uid)).thenReturn(true);
-
-        ResponseEntity<?> responseEntity = studentController.deleteStudent(uid);
+        ResponseEntity<Void> responseEntity = studentController.deleteStudent(uid);
 
         assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode());
         assertNull(responseEntity.getBody());
     }
 
     @Test
-    void deleteStudent_NotFound() {
+    void getStudentById_NotFound() throws Exception {
         int uid = 1;
-        Student student = new Student();
-        when(studentService.deleteStudent(uid)).thenReturn(false);
+        when(studentService.getStudentById(uid)).thenThrow(RecordNotFoundException.class);
 
-        ResponseEntity<?> responseEntity = studentController.deleteStudent(uid);
+        mockMvc.perform(get("/students/{studentId}", uid))
+                .andExpect(status().isBadRequest());
+    }
 
-        assertEquals(GetErrorResponse.studentNotFound(), responseEntity);
+
+    @Test
+    void createStudent_AlreadyExists() throws Exception {
+        when(studentService.createStudent(student)).thenThrow(RecordAlreadyExistException.class);
+
+        mockMvc.perform(post("/students")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(student)))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void updateStudent_NotFound() throws Exception{
+        int uid = 1;
+        when(studentService.updateStudent(uid, student)).thenThrow(RecordNotFoundException.class);
+
+        mockMvc.perform(put("/students/{studentId}", uid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(student)))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    @Test
+    void deleteStudent_NotFound() throws Exception {
+        int uid = 1;
+        doThrow(RecordNotFoundException.class).when(studentService).deleteStudent(uid);
+
+        mockMvc.perform(delete("/students/{studentId}", uid))
+                .andExpect(status().isBadRequest());
     }
 }

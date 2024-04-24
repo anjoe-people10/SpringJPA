@@ -1,7 +1,6 @@
 package com.anjoe.SpringJPA.controller;
 
 import com.anjoe.SpringJPA.model.Course;
-import com.anjoe.SpringJPA.model.Student;
 import com.anjoe.SpringJPA.service.CourseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
