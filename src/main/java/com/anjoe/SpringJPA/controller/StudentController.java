@@ -1,6 +1,6 @@
 package com.anjoe.SpringJPA.controller;
 
-import com.anjoe.SpringJPA.model.Student;
+import com.anjoe.SpringJPA.dto.StudentDTO;
 import com.anjoe.SpringJPA.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,26 +22,26 @@ public class StudentController {
 
     //Return a list of all students
     @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
+    public ResponseEntity<List<StudentDTO>> getAllStudents() {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
 
     //Returns student with /student/<studentId> with GET request
     @GetMapping("/{studentId}")
-    public ResponseEntity<Student> getStudentById(@PathVariable int studentId) {
+    public ResponseEntity<StudentDTO> getStudentById(@PathVariable int studentId) {
         return ResponseEntity.ok(studentService.getStudentById(studentId));
     }
 
     //Creates new student with json in request body with POST request
     @PostMapping()
-    public ResponseEntity<Student> createStudent(@Valid @RequestBody Student student) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.createStudent(student));
+    public ResponseEntity<StudentDTO> createStudent(@Valid @RequestBody StudentDTO studentDTO) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(studentService.createStudent(studentDTO));
     }
 
     //Updates existing student with /student/<studentId> and json in request body using PUT request
     @PutMapping("/{studentId}")
-    public ResponseEntity<Student> updateStudent(@PathVariable int studentId, @Valid @RequestBody Student newStudent) {
-        return ResponseEntity.ok(studentService.updateStudent(studentId, newStudent));
+    public ResponseEntity<StudentDTO> updateStudent(@PathVariable int studentId, @Valid @RequestBody StudentDTO newStudentDTO) {
+        return ResponseEntity.ok(studentService.updateStudent(studentId, newStudentDTO));
     }
 
     //Deleting existing student with /student/<studentId> using DELETE request

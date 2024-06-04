@@ -1,5 +1,6 @@
 package com.anjoe.SpringJPA.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 public class Student implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(updatable = false, nullable = false)
     private int studentId;
 
     @NotBlank(message = "Name cannot be null")
@@ -29,5 +31,6 @@ public class Student implements Serializable {
 
     @ManyToOne
     @JoinColumn(name = "teacher_id")
+    @JsonBackReference
     private Teacher classTeacher;
 }
