@@ -22,11 +22,8 @@ public class Student implements Serializable {
     @Column(updatable = false, nullable = false)
     private int studentId;
 
-    @NotBlank(message = "Name cannot be null")
     private String name;
 
-    @NotNull(message = "Date of birth cannot be null")
-    @Past(message = "Person is not born yet")
     private LocalDate dateOfBirth;
 
     @ManyToOne

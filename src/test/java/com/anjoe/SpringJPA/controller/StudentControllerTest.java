@@ -4,9 +4,6 @@ import com.anjoe.SpringJPA.config.JacksonConfig;
 import com.anjoe.SpringJPA.dto.StudentDTO;
 import com.anjoe.SpringJPA.exception.RecordAlreadyExistException;
 import com.anjoe.SpringJPA.exception.RecordNotFoundException;
-import com.anjoe.SpringJPA.mapper.StudentMapper;
-import com.anjoe.SpringJPA.model.Student;
-import com.anjoe.SpringJPA.model.Teacher;
 import com.anjoe.SpringJPA.service.StudentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -39,15 +36,17 @@ class StudentControllerTest {
     private MockMvc mockMvc;
     private ObjectMapper objectMapper;
     private StudentDTO studentDTO;
-    private Student student;
 
     @Mock
     private StudentService studentService;
 
     @BeforeEach
     void setUp() {
-        student = new Student(1, "TesterName", LocalDate.now().minusDays(1), new Teacher());
-        studentDTO = StudentMapper.INSTANCE.studentToStudentDTO(student);
+        studentDTO = new StudentDTO();
+        studentDTO.setStudentId(0);
+        studentDTO.setName("TestName");
+        studentDTO.setDateOfBirth(LocalDate.now().minusDays(1));
+        studentDTO.setTeacherId(1);
         studentController = new StudentController(studentService);
         mockMvc = MockMvcBuilders.standaloneSetup(studentController).build();
         objectMapper = new JacksonConfig().objectMapper();

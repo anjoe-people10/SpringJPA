@@ -13,7 +13,7 @@ public class StudentDTO {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private int studentId;
 
-    @NotBlank(message = "Date of birth cannot be null")
+    @NotBlank(message = "Name cannot be null")
     private String name;
 
     @NotNull(message = "Date of birth cannot be null")
